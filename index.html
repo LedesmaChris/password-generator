@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Password Generator with Strength Meter</title>
+  <title>Federal Password Generator</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f4f4f4;
+      background: #f2f2f2;
       display: flex;
       justify-content: center;
       align-items: center;
@@ -90,10 +90,10 @@
 </head>
 <body>
   <div class="container">
-    <h2>Password Generator</h2>
+    <h2>Federal Password Generator</h2>
 
     <label>Password Length: <span id="length-value">12</span></label>
-    <input type="range" id="length" min="6" max="30" value="12">
+    <input type="range" id="length" min="1" max="30" value="12">
 
     <label><input type="checkbox" id="uppercase" checked> Include Uppercase</label>
     <label><input type="checkbox" id="lowercase" checked> Include Lowercase</label>
@@ -116,8 +116,11 @@
     const lengthValue = document.getElementById('length-value');
     const passwordBox = document.getElementById('password');
 
+    // Update the label and strength meter as user moves slider
     lengthSlider.addEventListener('input', () => {
-      lengthValue.textContent = lengthSlider.value;
+      const len = lengthSlider.value;
+      lengthValue.textContent = len;
+      updateStrengthMeter(len);
     });
 
     function generatePassword() {
@@ -140,7 +143,7 @@
 
       if (characters === "") {
         passwordBox.textContent = "Select at least one option!";
-        updateStrengthMeter("");
+        updateStrengthMeter(0);
         return;
       }
 
@@ -151,7 +154,7 @@
       }
 
       passwordBox.textContent = password;
-      updateStrengthMeter(password);
+      updateStrengthMeter(length); // Real-time strength check based on length
     }
 
     function copyPassword() {
@@ -163,39 +166,39 @@
       });
     }
 
-    function updateStrengthMeter(password) {
+    function updateStrengthMeter(length) {
       const strengthBar = document.getElementById('strength-bar');
       const strengthText = document.getElementById('strength-text');
 
-      let strength = 0;
-      if (password.length >= 12) strength++;
-      if (/[A-Z]/.test(password)) strength++;
-      if (/[0-9]/.test(password)) strength++;
-      if (/[^A-Za-z0-9]/.test(password)) strength++;
-      if (password.length >= 12) strength++;
-
+      let label = 'Weak';
       let color = 'red';
-      let label = 'Very Weak';
-      let width = '20%';
+      let width = '25%';
 
-      switch (strength) {
-        case 1:
-          color = 'red'; label = 'Very Weak'; width = '20%'; break;
-        case 2:
-          color = 'orange'; label = 'Weak'; width = '40%'; break;
-        case 3:
-          color = 'gold'; label = 'Medium'; width = '60%'; break;
-        case 4:
-          color = '#2db84c'; label = 'Strong'; width = '80%'; break;
-        case 5:
-          color = '#1a8f3d'; label = 'Very Strong'; width = '100%'; break;
+      if (length >= 1 && length <= 6) {
+        label = 'Weak';
+        color = 'red';
+        width = '25%';
+      } else if (length >= 7 && length <= 12) {
+        label = 'Medium';
+        color = 'orange';
+        width = '50%';
+      } else if (length >= 13 && length <= 18) {
+        label = 'Strong';
+        color = '#2db84c';
+        width = '75%';
+      } else if (length >= 19) {
+        label = 'Very Strong';
+        color = '#1a8f3d';
+        width = '100%';
       }
 
       strengthBar.style.backgroundColor = color;
       strengthBar.style.width = width;
       strengthText.textContent = label;
     }
+
+    // Initialize strength meter on page load
+    updateStrengthMeter(lengthSlider.value);
   </script>
 </body>
 </html>
-
