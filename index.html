@@ -2,8 +2,91 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Password Generator</title>
-  <link rel="stylesheet" href="style.css">
+  <title>Password Generator with Strength Meter</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f4f4;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .container {
+      background: white;
+      padding: 30px;
+      border-radius: 10px;
+      box-shadow: 0 2px 15px rgba(0,0,0,0.1);
+      max-width: 400px;
+      width: 100%;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: flex;
+      justify-content: space-between;
+      margin: 10px 0;
+    }
+
+    input[type="range"] {
+      width: 100%;
+    }
+
+    .password-box {
+      font-weight: bold;
+      background: #eee;
+      padding: 10px;
+      margin: 10px 0;
+      text-align: center;
+      border-radius: 5px;
+      word-wrap: break-word;
+    }
+
+    button {
+      width: 100%;
+      padding: 10px;
+      background: #007bff;
+      color: white;
+      border: none;
+      cursor: pointer;
+      border-radius: 5px;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    #strength-meter {
+      margin: 10px 0;
+      height: 10px;
+      background: #ddd;
+      border-radius: 5px;
+      position: relative;
+    }
+
+    #strength-bar {
+      height: 100%;
+      width: 0%;
+      background: red;
+      border-radius: 5px;
+      transition: width 0.3s ease-in-out;
+    }
+
+    #strength-text {
+      display: block;
+      text-align: center;
+      margin-top: 5px;
+      font-size: 0.9em;
+      font-weight: bold;
+    }
+  </style>
 </head>
 <body>
   <div class="container">
@@ -19,10 +102,99 @@
 
     <div class="password-box" id="password">Your password will appear here</div>
 
+    <div id="strength-meter">
+      <div id="strength-bar"></div>
+    </div>
+    <span id="strength-text">Password strength</span>
+
     <button onclick="generatePassword()">Generate Password</button>
     <button onclick="copyPassword()">Copy to Clipboard</button>
   </div>
 
-  <script src="script.js"></script>
+  <script>
+    const lengthSlider = document.getElementById('length');
+    const lengthValue = document.getElementById('length-value');
+    const passwordBox = document.getElementById('password');
+
+    lengthSlider.addEventListener('input', () => {
+      lengthValue.textContent = lengthSlider.value;
+    });
+
+    function generatePassword() {
+      const length = +lengthSlider.value;
+      const useUpper = document.getElementById('uppercase').checked;
+      const useLower = document.getElementById('lowercase').checked;
+      const useNumber = document.getElementById('numbers').checked;
+      const useSymbol = document.getElementById('symbols').checked;
+
+      const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+      const lower = "abcdefghijklmnopqrstuvwxyz";
+      const numbers = "0123456789";
+      const symbols = "!@#$%^&*()_+=<>?/{}[]|~";
+
+      let characters = "";
+      if (useUpper) characters += upper;
+      if (useLower) characters += lower;
+      if (useNumber) characters += numbers;
+      if (useSymbol) characters += symbols;
+
+      if (characters === "") {
+        passwordBox.textContent = "Select at least one option!";
+        updateStrengthMeter("");
+        return;
+      }
+
+      let password = "";
+      for (let i = 0; i < length; i++) {
+        const rand = Math.floor(Math.random() * characters.length);
+        password += characters[rand];
+      }
+
+      passwordBox.textContent = password;
+      updateStrengthMeter(password);
+    }
+
+    function copyPassword() {
+      const password = passwordBox.textContent;
+      if (!password || password.includes("Select")) return;
+
+      navigator.clipboard.writeText(password).then(() => {
+        alert("Password copied to clipboard!");
+      });
+    }
+
+    function updateStrengthMeter(password) {
+      const strengthBar = document.getElementById('strength-bar');
+      const strengthText = document.getElementById('strength-text');
+
+      let strength = 0;
+      if (password.length >= 8) strength++;
+      if (/[A-Z]/.test(password)) strength++;
+      if (/[0-9]/.test(password)) strength++;
+      if (/[^A-Za-z0-9]/.test(password)) strength++;
+      if (password.length >= 12) strength++;
+
+      let color = 'red';
+      let label = 'Very Weak';
+      let width = '20%';
+
+      switch (strength) {
+        case 1:
+          color = 'red'; label = 'Very Weak'; width = '20%'; break;
+        case 2:
+          color = 'orange'; label = 'Weak'; width = '40%'; break;
+        case 3:
+          color = 'gold'; label = 'Medium'; width = '60%'; break;
+        case 4:
+          color = '#2db84c'; label = 'Strong'; width = '80%'; break;
+        case 5:
+          color = '#1a8f3d'; label = 'Very Strong'; width = '100%'; break;
+      }
+
+      strengthBar.style.backgroundColor = color;
+      strengthBar.style.width = width;
+      strengthText.textContent = label;
+    }
+  </script>
 </body>
 </html>
